@@ -1,7 +1,7 @@
 # PhosphoEnrichment
 
 ## 1. System Requirements
-================================
+
 
 ### 1.1. Prerequisites for Deployment 
 
@@ -35,13 +35,13 @@ in the MathWorks Documentation Center.
 ### 1.3. The software has been tested on Windows 10, and MATLAB R2020a
 
 ## 2. Installation Guide
-================================
+
 
 The user can open the applciation by clicking on the PhosphoEnrichment.exe under App folder to run the applications. It takes seconds to open the application on the Windows PC (Intel(R) Core(TM) i7-8700 CPU @ 3.20GHz)
 
 
 ## 3. Demo and Instruction for use
-================================
+
 
 3.1. Pathway Enrichment Analysis: 
 
@@ -56,7 +56,7 @@ Input: The phosphosites and their log(fold change) (space delimited) can be copi
 Output: The result will be shown as the bar plot on the panel. The upregulated kinases will be blue, and downregulated will be red. The significnat kinases will be marked with the star. They result will be written in the file. 
 
 ## 4. Contact
-================================
+
 If you have any questions, feel free to contact MArzieh Ayati at marzieh.ayati@utrgv.edu
 
 
