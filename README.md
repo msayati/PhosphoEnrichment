@@ -57,6 +57,6 @@ Output: The result will be shown as the bar plot on the panel. The upregulated k
 
 ## 4. Contact
 
-If you have any questions, feel free to contact MArzieh Ayati at marzieh.ayati@utrgv.edu
+If you have any questions, feel free to contact Marzieh Ayati at marzieh.ayati@utrgv.edu
 
 
