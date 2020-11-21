@@ -1,8 +1,6 @@
 # PhosphoEnrichment
 
-PhosphoEnrichment Executable
-
-1. System Requirements
+## 1. System Requirements
 ================================
 
 1.1. Prerequisites for Deployment 
