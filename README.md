@@ -3,7 +3,7 @@
 ## 1. System Requirements
 ================================
 
-1.1. Prerequisites for Deployment 
+### 1.1. Prerequisites for Deployment 
 
 Verify that version 9.8 (R2020a) of the MATLAB Runtime is installed.   
 If not, you can run the MATLAB Runtime installer.
@@ -23,7 +23,7 @@ For more information about the MATLAB Runtime and the MATLAB Runtime installer, 
 "Distribute Applications" in the MATLAB Compiler documentation  
 in the MathWorks Documentation Center.
 
-1.2. Files to Deploy and Package
+### 1.2. Files to Deploy and Package
 
 -PhosphoEnrichment.exe
 -MCRInstaller.exe 
@@ -32,15 +32,15 @@ in the MathWorks Documentation Center.
 -PTMsidDB.mat: This file contains the information about the involvement of sites in the pathways (Krug et al, MCP 2019)
 -PSP.mat: This file contains the kinase-substrate association in order to do Kinase-Substrate Associations (Hornbeck et al, NAR, 2012)
 
-1.3. The software has been tested on Windows 10, and MATLAB R2020a
+### 1.3. The software has been tested on Windows 10, and MATLAB R2020a
 
-2. Installation Guide
+## 2. Installation Guide
 ================================
 
 The user can open the applciation by clicking on the PhosphoEnrichment.exe under App folder to run the applications. It takes seconds to open the application on the Windows PC (Intel(R) Core(TM) i7-8700 CPU @ 3.20GHz)
 
 
-3. Demo and Instruction for use
+## 3. Demo and Instruction for use
 ================================
 
 3.1. Pathway Enrichment Analysis: 
@@ -55,7 +55,7 @@ Input: The phosphosites and their log(fold change) (space delimited) can be copi
 
 Output: The result will be shown as the bar plot on the panel. The upregulated kinases will be blue, and downregulated will be red. The significnat kinases will be marked with the star. They result will be written in the file. 
 
-4. Contact
+## 4. Contact
 ================================
 If you have any questions, feel free to contact MArzieh Ayati at marzieh.ayati@utrgv.edu
 
