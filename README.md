@@ -35,7 +35,7 @@ in the MathWorks Documentation Center.
 
 -PSP.mat: This file contains the kinase-substrate association in order to do Kinase-Substrate Associations (Hornbeck et al, NAR, 2012)
 
-### 1.3. The software has been tested on Windows 10, and MATLAB R2020a
+1.3. The software has been tested on Windows 10, and MATLAB R2020a
 
 ## 2. Installation Guide
 
