@@ -1,0 +1,48 @@
+Under Pathway Enrichment Analysis, copy the following in the Target Phosphosites section:
+
+STAT5B-Y699
+MAPK14-T180
+MAPK14-Y182
+EIF1-Y30
+
+
+And copy the following under population panel:
+PDHA1-S300
+PDHA1-Y301
+PRDX1-Y10
+KDR-Y1212
+FLT1-Y1169
+FYN-Y185
+FYN-Y213
+STAT3-Y705
+STAT5A-Y694
+STAT5B-Y699
+MAPK14-T180
+MAPK14-Y182
+EIF1-Y30
+SYK-Y317
+
+
+Under Kinase Substrate Enrichment Analysis, copy the following int he Target Phosphosites section:
+
+STAT5B-Y699
+MAPK14-T180
+MAPK14-Y182
+EIF1-Y30
+
+and copy the following under all phosphosites
+
+PDHA1-S300	-0.86
+PDHA1-Y301	1.11
+PRDX1-Y10	0.17
+KDR-Y1212	0.71
+FLT1-Y1169	0.52
+FYN-Y185	-0.9
+FYN-Y213	0.26
+STAT3-Y705	0.63
+STAT5A-Y694	0.2
+STAT5B-Y699	0.07
+MAPK14-T180	-1.78
+MAPK14-Y182	-3.07
+EIF1-Y30	0.28
+SYK-Y317	-0.56

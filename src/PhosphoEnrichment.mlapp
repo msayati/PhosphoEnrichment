@@ -1,0 +1,490 @@
+classdef PhosphoEnrichment < matlab.apps.AppBase
+
+    % Properties that correspond to app components
+    properties (Access = public)
+        UIFigure                        matlab.ui.Figure
+        TabGroup                        matlab.ui.container.TabGroup
+        WelcomeTab                      matlab.ui.container.Tab
+        WelcometoPhosphoEnrichmentLabel  matlab.ui.control.Label
+        ThissoftwareisdevelopedtofaciliatateLabel  matlab.ui.control.Label
+        PathwayEnrichmentAnalysisLabel  matlab.ui.control.Label
+        Label_3                         matlab.ui.control.Label
+        Label_4                         matlab.ui.control.Label
+        Label_5                         matlab.ui.control.Label
+        significantsitesorsitesintheidentifiedmodulesetcLabel  matlab.ui.control.Label
+        KinaseSubstrateEnrichmentAnalysisLabel  matlab.ui.control.Label
+        Label_6                         matlab.ui.control.Label
+        Label_7                         matlab.ui.control.Label
+        Label_8                         matlab.ui.control.Label
+        ContactLabel                    matlab.ui.control.Label
+        Label_9                         matlab.ui.control.Label
+        identifiedmodulesetcLabel       matlab.ui.control.Label
+        modulesetcLabel                 matlab.ui.control.Label
+        marziehayatiutrgveduLabel       matlab.ui.control.Label
+        PathwayEnrichmentAnalysisTab    matlab.ui.container.Tab
+        TargetPhosphositesProteinsTextAreaLabel  matlab.ui.control.Label
+        TargetPhosphositesProteinsTextArea  matlab.ui.control.TextArea
+        AllIdentifiedPhosphositespopulationTextAreaLabel  matlab.ui.control.Label
+        AllIdentifiedPhosphositespopulationTextArea  matlab.ui.control.TextArea
+        InputDataButtonGroup            matlab.ui.container.ButtonGroup
+        PhosphositesButton              matlab.ui.control.RadioButton
+        ProteinsButton                  matlab.ui.control.RadioButton
+        DatabaseButtonGroup             matlab.ui.container.ButtonGroup
+        PTMsigDBButton                  matlab.ui.control.RadioButton
+        SigDBButton                     matlab.ui.control.RadioButton
+        EnrichmentAnalysisButton        matlab.ui.control.Button
+        ThedetailsofoverlapingproteinssiteswillbewritteninthefileLabel  matlab.ui.control.Label
+        ResultPanel                     matlab.ui.container.Panel
+        KinaseSubstrateEnrichmentAnalysisTab  matlab.ui.container.Tab
+        AllPhosphoSiteslogFoldChangeTextAreaLabel  matlab.ui.control.Label
+        AllPhosphoSiteslogFoldChangeTextArea  matlab.ui.control.TextArea
+        TargetPhosphositesTextAreaLabel  matlab.ui.control.Label
+        TargetPhosphositesTextArea      matlab.ui.control.TextArea
+        RunKSEAButton                   matlab.ui.control.Button
+        UIAxes                          matlab.ui.control.UIAxes
+        TabdelimitedLabel               matlab.ui.control.Label
+        TheresultwillbewritteninthefileLabel  matlab.ui.control.Label
+        DataFormatTab                   matlab.ui.container.Tab
+        PhosphositesLabel               matlab.ui.control.Label
+        Label                           matlab.ui.control.Label
+        MYOTY397Label                   matlab.ui.control.Label
+        HIPK3S362Label                  matlab.ui.control.Label
+        LogFoldChangeLabel              matlab.ui.control.Label
+        Label_2                         matlab.ui.control.Label
+        MYOTT397215Label                matlab.ui.control.Label
+        HIPK3S3983124Label              matlab.ui.control.Label
+    end
+
+    % Callbacks that handle component events
+    methods (Access = private)
+
+        % Button pushed function: EnrichmentAnalysisButton
+        function EnrichmentAnalysisButtonPushed(app, event)
+            listofTargets = app.TargetPhosphositesProteinsTextArea.Value;
+            listofTargets=unique(upper(listofTargets));
+            
+            listofAllPopulation = app.AllIdentifiedPhosphositespopulationTextArea.Value;
+            listofAllPopulation = unique(upper(listofAllPopulation));
+            flag = '';
+            if(app.PTMsigDBButton.Value)
+                sourcepathways =load('PTMsigDB','pathways_site'); 
+                sourcepathways =sourcepathways.pathways_site;
+                flag = 'PTMsigdb';
+            end
+            if(app.SigDBButton.Value)                
+                 sourcepathways =load('PTMsigDB','pathways_genes2');
+                 sourcepathways =sourcepathways.pathways_genes2;
+                 if(app.ProteinsButton.Value)
+                      listofTargets = unique(listofTargets);
+                     listofAllPopulation = unique(listofAllPopulation);          
+                 else
+                     listofTargets = unique(genesNamesfromPhosphosites(listofTargets));
+                     listofAllPopulation = unique(genesNamesfromPhosphosites(listofAllPopulation));                 
+                 end
+                 flag = 'sigdb';
+            end
+            for i=1:length(sourcepathways)   
+                x = intersect(listofTargets,sourcepathways{i,2});
+                if(length(x) > 1)
+                    K = length(intersect(sourcepathways{i,2},listofAllPopulation));
+                    N = length(listofTargets);
+                    M = length(listofAllPopulation);
+                    hypvalue(i) = hygecdf(length(x),M,K,N,'upper');
+                    intersection{i} = x;
+                    intersection_size(i) = length(x);
+                else
+                     hypvalue(i) = 1;
+                      intersection{i} =0;
+                      intersection_size(i) = 0;
+                end   
+            end
+            
+            [pvalue I] = sort(hypvalue,'ascend');
+            pathway = sourcepathways(I);            
+            intersection = intersection(I);
+            intersection_size=intersection_size(I);
+            exclude = find(pvalue == 1);            
+            pathway(exclude)=[];
+            pvalue(exclude)=[];
+            intersection(exclude)=[];
+            intersection_size(exclude)=[];
+            tbl = table(pathway',pvalue',intersection','VariableNames',{'Pathway','Pvalue','Intersection'}); 
+            writetable(tbl,strcat('Result_',flag,'_EnrichmentAnalysis'),'delimiter','\t','WriteVariableNames',true);  
+                        
+            exclude = find(pvalue == 0);
+            pathway(exclude)=[];
+            pvalue(exclude)=[];
+            intersection(exclude)=[];
+            intersection_size(exclude)=[];
+            include = find(pvalue <= 0.11);
+            pathway = pathway(include);
+            pvalue = pvalue(include);      
+            intersection_size = intersection_size(include);
+            tbl = table(string(pathway'),pvalue',intersection_size','VariableNames',{'Pathway','Pvalue','Overlap'}); 
+            %tb = app.UITable.Position;            
+            %uitable(app.UIFigure, 'Data',tbl,'Position',tb);                     
+            uitable(app.ResultPanel,'Data',tbl,'OuterPosition',app.ResultPanel.Position,'FontSize',14);
+            
+        end
+
+        % Value changed function: TargetPhosphositesProteinsTextArea
+        function TargetPhosphositesProteinsTextAreaValueChanged(app, event)
+            target_value = app.TargetPhosphositesProteinsTextArea.Value;
+            
+        end
+
+        % Selection changed function: InputDataButtonGroup
+        function InputDataButtonGroupSelectionChanged(app, event)
+             if(app.PhosphositesButton.Value)
+                app.PTMsigDBButton.Enable = true;  
+                app.PTMsigDBButton.Value = 1;
+            end
+            if(app.ProteinsButton.Value)
+                app.PTMsigDBButton.Enable = false;  
+                app.SigDBButton.Value = 1;
+            end            
+        end
+
+        % Button pushed function: RunKSEAButton
+        function RunKSEAButtonPushed(app, event)
+            Allphosphosites_FC = app.AllPhosphoSiteslogFoldChangeTextArea.Value;
+            for i=1:length(Allphosphosites_FC)
+                tmp = Allphosphosites_FC{i};
+                if(length(tmp)>2)
+                    ind = strfind(tmp,char(9));
+                    Allphosphosites{i} = upper(tmp(1:ind-1));
+                    FC(i) = str2num(tmp(ind+1:length(tmp))); 
+                end
+            end
+            [KSEA_scores, KSEA_kinases,KSEA_kinases_pval] = KSEA(upper(app.TargetPhosphositesTextArea.Value),Allphosphosites,FC);
+            tbl = table(KSEA_kinases,KSEA_scores',KSEA_kinases_pval','VariableNames',{'Kinase_Name','Kinase_Score','Kinase_Pvalue'});
+            writetable(tbl,strcat('Result_KinaseSubstrateEnrichmentAnalysis'),'delimiter','\t','WriteVariableNames',true);  
+            
+            b = barh(app.UIAxes,KSEA_scores);            
+            sig = find(KSEA_kinases_pval<0.06);
+            hold(app.UIAxes,'on')
+            KSEA_kinases(sig) = strcat(KSEA_kinases(sig),'*');     
+            b.Parent.YTick = 1:length(KSEA_kinases);
+            b.Parent.YTickLabel = KSEA_kinases;
+            b.Parent.XLabel.String = {'Kinase Score'; '*: significant kinases'};
+            barh(app.UIAxes,sig,KSEA_scores(sig)); 
+        end
+    end
+
+    % Component initialization
+    methods (Access = private)
+
+        % Create UIFigure and components
+        function createComponents(app)
+
+            % Create UIFigure and hide until all components are created
+            app.UIFigure = uifigure('Visible', 'off');
+            app.UIFigure.Position = [100 100 640 480];
+            app.UIFigure.Name = 'UI Figure';
+
+            % Create TabGroup
+            app.TabGroup = uitabgroup(app.UIFigure);
+            app.TabGroup.Position = [1 1 640 480];
+
+            % Create WelcomeTab
+            app.WelcomeTab = uitab(app.TabGroup);
+            app.WelcomeTab.Title = 'Welcome';
+
+            % Create WelcometoPhosphoEnrichmentLabel
+            app.WelcometoPhosphoEnrichmentLabel = uilabel(app.WelcomeTab);
+            app.WelcometoPhosphoEnrichmentLabel.FontSize = 16;
+            app.WelcometoPhosphoEnrichmentLabel.FontWeight = 'bold';
+            app.WelcometoPhosphoEnrichmentLabel.Position = [33 402 264 22];
+            app.WelcometoPhosphoEnrichmentLabel.Text = 'Welcome to PhosphoEnrichment!';
+
+            % Create ThissoftwareisdevelopedtofaciliatateLabel
+            app.ThissoftwareisdevelopedtofaciliatateLabel = uilabel(app.WelcomeTab);
+            app.ThissoftwareisdevelopedtofaciliatateLabel.Position = [33 356 475 22];
+            app.ThissoftwareisdevelopedtofaciliatateLabel.Text = 'PhosphoEnrichment is developed to facilitate the analysis of phosphoproteomics data. ';
+
+            % Create PathwayEnrichmentAnalysisLabel
+            app.PathwayEnrichmentAnalysisLabel = uilabel(app.WelcomeTab);
+            app.PathwayEnrichmentAnalysisLabel.FontWeight = 'bold';
+            app.PathwayEnrichmentAnalysisLabel.Position = [33 313 176 22];
+            app.PathwayEnrichmentAnalysisLabel.Text = 'Pathway Enrichment Analysis';
+
+            % Create Label_3
+            app.Label_3 = uilabel(app.WelcomeTab);
+            app.Label_3.Position = [33 281 618 22];
+            app.Label_3.Text = 'It computes the p-value of the pathways/processes/perturbations that are enriched in the target set at the protein ';
+
+            % Create Label_4
+            app.Label_4 = uilabel(app.WelcomeTab);
+            app.Label_4.Position = [33 260 622 22];
+            app.Label_4.Text = 'and site level using sigDB and PTMsigDB datasets. You should provide the list of all identified phosphosites in the';
+
+            % Create Label_5
+            app.Label_5 = uilabel(app.WelcomeTab);
+            app.Label_5.Position = [33 240 606 22];
+            app.Label_5.Text = 'experiment (which is going to be used as the background population to compute p-value), and the set that you ';
+
+            % Create significantsitesorsitesintheidentifiedmodulesetcLabel
+            app.significantsitesorsitesintheidentifiedmodulesetcLabel = uilabel(app.WelcomeTab);
+            app.significantsitesorsitesintheidentifiedmodulesetcLabel.Position = [33 219 613 22];
+            app.significantsitesorsitesintheidentifiedmodulesetcLabel.Text = 'want to apply enrichment analysis on (it could be a set of significant sites, or sites in the identified modules, etc).';
+
+            % Create KinaseSubstrateEnrichmentAnalysisLabel
+            app.KinaseSubstrateEnrichmentAnalysisLabel = uilabel(app.WelcomeTab);
+            app.KinaseSubstrateEnrichmentAnalysisLabel.FontWeight = 'bold';
+            app.KinaseSubstrateEnrichmentAnalysisLabel.Position = [33 173 228 22];
+            app.KinaseSubstrateEnrichmentAnalysisLabel.Text = 'Kinase Substrate Enrichment Analysis';
+
+            % Create Label_6
+            app.Label_6 = uilabel(app.WelcomeTab);
+            app.Label_6.Position = [33 141 617 22];
+            app.Label_6.Text = 'It identifies the kinases whose targets exhibit significantly altered phosphorylation levels in the given experiment. ';
+
+            % Create Label_7
+            app.Label_7 = uilabel(app.WelcomeTab);
+            app.Label_7.Position = [33 120 598 22];
+            app.Label_7.Text = 'We use the Kinase-Substrate Association provided by PhosphoSitePLUS as a reference dataset/ You should ';
+
+            % Create Label_8
+            app.Label_8 = uilabel(app.WelcomeTab);
+            app.Label_8.Position = [33 99 613 22];
+            app.Label_8.Text = 'provide all identified phosphosites and their fold change, and the set that you want to apply enrichment analysis ';
+
+            % Create ContactLabel
+            app.ContactLabel = uilabel(app.WelcomeTab);
+            app.ContactLabel.FontSize = 14;
+            app.ContactLabel.FontWeight = 'bold';
+            app.ContactLabel.Position = [33 17 74 22];
+            app.ContactLabel.Text = 'Contact:   ';
+
+            % Create Label_9
+            app.Label_9 = uilabel(app.WelcomeTab);
+            app.Label_9.Position = [96 17 430 22];
+            app.Label_9.Text = 'This software is developed by Marzieh Ayati. If you have any question, contact';
+
+            % Create identifiedmodulesetcLabel
+            app.identifiedmodulesetcLabel = uilabel(app.WelcomeTab);
+            app.identifiedmodulesetcLabel.Position = [33 78 607 22];
+            app.identifiedmodulesetcLabel.Text = 'on (it could be all identified phosphosites in the experiment, or a set of significant sites, or sites in the identified ';
+
+            % Create modulesetcLabel
+            app.modulesetcLabel = uilabel(app.WelcomeTab);
+            app.modulesetcLabel.Position = [33 57 84 22];
+            app.modulesetcLabel.Text = 'modules, etc). ';
+
+            % Create marziehayatiutrgveduLabel
+            app.marziehayatiutrgveduLabel = uilabel(app.WelcomeTab);
+            app.marziehayatiutrgveduLabel.Position = [96 1 142 22];
+            app.marziehayatiutrgveduLabel.Text = 'marzieh.ayati@utrgv.edu.';
+
+            % Create PathwayEnrichmentAnalysisTab
+            app.PathwayEnrichmentAnalysisTab = uitab(app.TabGroup);
+            app.PathwayEnrichmentAnalysisTab.Title = 'Pathway Enrichment Analysis';
+
+            % Create TargetPhosphositesProteinsTextAreaLabel
+            app.TargetPhosphositesProteinsTextAreaLabel = uilabel(app.PathwayEnrichmentAnalysisTab);
+            app.TargetPhosphositesProteinsTextAreaLabel.HorizontalAlignment = 'right';
+            app.TargetPhosphositesProteinsTextAreaLabel.FontColor = [0.149 0.149 0.149];
+            app.TargetPhosphositesProteinsTextAreaLabel.Position = [44 413 162 22];
+            app.TargetPhosphositesProteinsTextAreaLabel.Text = 'Target Phosphosites/Proteins';
+
+            % Create TargetPhosphositesProteinsTextArea
+            app.TargetPhosphositesProteinsTextArea = uitextarea(app.PathwayEnrichmentAnalysisTab);
+            app.TargetPhosphositesProteinsTextArea.ValueChangedFcn = createCallbackFcn(app, @TargetPhosphositesProteinsTextAreaValueChanged, true);
+            app.TargetPhosphositesProteinsTextArea.FontColor = [0.651 0.651 0.651];
+            app.TargetPhosphositesProteinsTextArea.Position = [46 208 150 196];
+            app.TargetPhosphositesProteinsTextArea.Value = {'STAT5B-Y699'; 'MAPK14-T180'; 'MAPK14-Y182'; 'EIF1-Y30'};
+
+            % Create AllIdentifiedPhosphositespopulationTextAreaLabel
+            app.AllIdentifiedPhosphositespopulationTextAreaLabel = uilabel(app.PathwayEnrichmentAnalysisTab);
+            app.AllIdentifiedPhosphositespopulationTextAreaLabel.HorizontalAlignment = 'right';
+            app.AllIdentifiedPhosphositespopulationTextAreaLabel.FontColor = [0.149 0.149 0.149];
+            app.AllIdentifiedPhosphositespopulationTextAreaLabel.Position = [244 413 214 22];
+            app.AllIdentifiedPhosphositespopulationTextAreaLabel.Text = 'All Identified Phosphosites (population)';
+
+            % Create AllIdentifiedPhosphositespopulationTextArea
+            app.AllIdentifiedPhosphositespopulationTextArea = uitextarea(app.PathwayEnrichmentAnalysisTab);
+            app.AllIdentifiedPhosphositespopulationTextArea.FontColor = [0.651 0.651 0.651];
+            app.AllIdentifiedPhosphositespopulationTextArea.Position = [276 208 150 196];
+            app.AllIdentifiedPhosphositespopulationTextArea.Value = {'PDHA1-S300'; 'PDHA1-Y301'; 'PRDX1-Y10'; 'KDR-Y1212'; 'FLT1-Y1169'; 'FYN-Y185'; 'FYN-Y213'; 'STAT3-Y705'; 'STAT5A-Y694'; 'STAT5B-Y699'; 'MAPK14-T180'; 'MAPK14-Y182'; 'EIF1-Y30'; 'SYK-Y317'};
+
+            % Create InputDataButtonGroup
+            app.InputDataButtonGroup = uibuttongroup(app.PathwayEnrichmentAnalysisTab);
+            app.InputDataButtonGroup.SelectionChangedFcn = createCallbackFcn(app, @InputDataButtonGroupSelectionChanged, true);
+            app.InputDataButtonGroup.Title = 'Input Data';
+            app.InputDataButtonGroup.Position = [484 327 123 77];
+
+            % Create PhosphositesButton
+            app.PhosphositesButton = uiradiobutton(app.InputDataButtonGroup);
+            app.PhosphositesButton.Text = 'Phosphosites';
+            app.PhosphositesButton.Position = [11 31 94 22];
+            app.PhosphositesButton.Value = true;
+
+            % Create ProteinsButton
+            app.ProteinsButton = uiradiobutton(app.InputDataButtonGroup);
+            app.ProteinsButton.Text = 'Proteins';
+            app.ProteinsButton.Position = [11 9 66 22];
+
+            % Create DatabaseButtonGroup
+            app.DatabaseButtonGroup = uibuttongroup(app.PathwayEnrichmentAnalysisTab);
+            app.DatabaseButtonGroup.Title = 'Database';
+            app.DatabaseButtonGroup.Position = [484 249 123 72];
+
+            % Create PTMsigDBButton
+            app.PTMsigDBButton = uiradiobutton(app.DatabaseButtonGroup);
+            app.PTMsigDBButton.Text = 'PTMsigDB';
+            app.PTMsigDBButton.Position = [11 26 79 22];
+            app.PTMsigDBButton.Value = true;
+
+            % Create SigDBButton
+            app.SigDBButton = uiradiobutton(app.DatabaseButtonGroup);
+            app.SigDBButton.Text = 'SigDB';
+            app.SigDBButton.Position = [11 4 65 22];
+
+            % Create EnrichmentAnalysisButton
+            app.EnrichmentAnalysisButton = uibutton(app.PathwayEnrichmentAnalysisTab, 'push');
+            app.EnrichmentAnalysisButton.ButtonPushedFcn = createCallbackFcn(app, @EnrichmentAnalysisButtonPushed, true);
+            app.EnrichmentAnalysisButton.Position = [484 208 123 22];
+            app.EnrichmentAnalysisButton.Text = 'Enrichment Analysis';
+
+            % Create ThedetailsofoverlapingproteinssiteswillbewritteninthefileLabel
+            app.ThedetailsofoverlapingproteinssiteswillbewritteninthefileLabel = uilabel(app.PathwayEnrichmentAnalysisTab);
+            app.ThedetailsofoverlapingproteinssiteswillbewritteninthefileLabel.Position = [44 174 345 22];
+            app.ThedetailsofoverlapingproteinssiteswillbewritteninthefileLabel.Text = 'The details of overlaping proteins/sites will be written in the file.';
+
+            % Create ResultPanel
+            app.ResultPanel = uipanel(app.PathwayEnrichmentAnalysisTab);
+            app.ResultPanel.Title = 'Result';
+            app.ResultPanel.FontWeight = 'bold';
+            app.ResultPanel.FontSize = 14;
+            app.ResultPanel.Position = [44 13 563 162];
+
+            % Create KinaseSubstrateEnrichmentAnalysisTab
+            app.KinaseSubstrateEnrichmentAnalysisTab = uitab(app.TabGroup);
+            app.KinaseSubstrateEnrichmentAnalysisTab.Title = 'Kinase Substrate Enrichment Analysis';
+            app.KinaseSubstrateEnrichmentAnalysisTab.BackgroundColor = [0.9412 0.9412 0.9412];
+
+            % Create AllPhosphoSiteslogFoldChangeTextAreaLabel
+            app.AllPhosphoSiteslogFoldChangeTextAreaLabel = uilabel(app.KinaseSubstrateEnrichmentAnalysisTab);
+            app.AllPhosphoSiteslogFoldChangeTextAreaLabel.HorizontalAlignment = 'right';
+            app.AllPhosphoSiteslogFoldChangeTextAreaLabel.Position = [124 418 205 22];
+            app.AllPhosphoSiteslogFoldChangeTextAreaLabel.Text = 'All PhosphoSites & log(Fold Change)';
+
+            % Create AllPhosphoSiteslogFoldChangeTextArea
+            app.AllPhosphoSiteslogFoldChangeTextArea = uitextarea(app.KinaseSubstrateEnrichmentAnalysisTab);
+            app.AllPhosphoSiteslogFoldChangeTextArea.FontColor = [0.651 0.651 0.651];
+            app.AllPhosphoSiteslogFoldChangeTextArea.Position = [152 79 150 325];
+            app.AllPhosphoSiteslogFoldChangeTextArea.Value = {'PDHA1-S300	-0.86'; 'PDHA1-Y301	1.11'; 'PRDX1-Y10	0.17'; 'KDR-Y1212	0.71'; 'FLT1-Y1169	0.52'; 'FYN-Y185	-0.9'; 'FYN-Y213	0.26'; 'STAT3-Y705	0.63'; 'STAT5A-Y694	0.2'; 'STAT5B-Y699	0.07'; 'MAPK14-T180	-1.78'; 'MAPK14-Y182	-3.07'; 'EIF1-Y30	0.28'; 'SYK-Y317	-0.56'; ''};
+
+            % Create TargetPhosphositesTextAreaLabel
+            app.TargetPhosphositesTextAreaLabel = uilabel(app.KinaseSubstrateEnrichmentAnalysisTab);
+            app.TargetPhosphositesTextAreaLabel.HorizontalAlignment = 'right';
+            app.TargetPhosphositesTextAreaLabel.Position = [5 419 114 22];
+            app.TargetPhosphositesTextAreaLabel.Text = 'Target Phosphosites';
+
+            % Create TargetPhosphositesTextArea
+            app.TargetPhosphositesTextArea = uitextarea(app.KinaseSubstrateEnrichmentAnalysisTab);
+            app.TargetPhosphositesTextArea.FontColor = [0.651 0.651 0.651];
+            app.TargetPhosphositesTextArea.Position = [14 79 105 325];
+            app.TargetPhosphositesTextArea.Value = {'STAT5B-Y699'; 'MAPK14-T180'; 'MAPK14-Y182'; 'EIF1-Y30'};
+
+            % Create RunKSEAButton
+            app.RunKSEAButton = uibutton(app.KinaseSubstrateEnrichmentAnalysisTab, 'push');
+            app.RunKSEAButton.ButtonPushedFcn = createCallbackFcn(app, @RunKSEAButtonPushed, true);
+            app.RunKSEAButton.Position = [92 35 100 22];
+            app.RunKSEAButton.Text = 'Run KSEA';
+
+            % Create UIAxes
+            app.UIAxes = uiaxes(app.KinaseSubstrateEnrichmentAnalysisTab);
+            title(app.UIAxes, 'KSEA Result')
+            xlabel(app.UIAxes, '')
+            ylabel(app.UIAxes, '')
+            app.UIAxes.Position = [330 79 300 346];
+
+            % Create TabdelimitedLabel
+            app.TabdelimitedLabel = uilabel(app.KinaseSubstrateEnrichmentAnalysisTab);
+            app.TabdelimitedLabel.Position = [183 403 85 22];
+            app.TabdelimitedLabel.Text = '(Tab-delimited)';
+
+            % Create TheresultwillbewritteninthefileLabel
+            app.TheresultwillbewritteninthefileLabel = uilabel(app.KinaseSubstrateEnrichmentAnalysisTab);
+            app.TheresultwillbewritteninthefileLabel.Position = [201 35 190 22];
+            app.TheresultwillbewritteninthefileLabel.Text = 'The result will be written in the file.';
+
+            % Create DataFormatTab
+            app.DataFormatTab = uitab(app.TabGroup);
+            app.DataFormatTab.Title = 'Data Format';
+
+            % Create PhosphositesLabel
+            app.PhosphositesLabel = uilabel(app.DataFormatTab);
+            app.PhosphositesLabel.FontSize = 14;
+            app.PhosphositesLabel.FontWeight = 'bold';
+            app.PhosphositesLabel.Position = [26 411 97 22];
+            app.PhosphositesLabel.Text = 'Phosphosites';
+
+            % Create Label
+            app.Label = uilabel(app.DataFormatTab);
+            app.Label.Position = [38 360 518 33];
+            app.Label.Text = 'The phosphosites should be given to the program in the format of "Protein-Site":';
+
+            % Create MYOTY397Label
+            app.MYOTY397Label = uilabel(app.DataFormatTab);
+            app.MYOTY397Label.Position = [58 325 72 22];
+            app.MYOTY397Label.Text = 'MYOT-Y397';
+
+            % Create HIPK3S362Label
+            app.HIPK3S362Label = uilabel(app.DataFormatTab);
+            app.HIPK3S362Label.Position = [58 304 72 22];
+            app.HIPK3S362Label.Text = 'HIPK3-S362';
+
+            % Create LogFoldChangeLabel
+            app.LogFoldChangeLabel = uilabel(app.DataFormatTab);
+            app.LogFoldChangeLabel.FontSize = 14;
+            app.LogFoldChangeLabel.FontWeight = 'bold';
+            app.LogFoldChangeLabel.Position = [26 250 125 22];
+            app.LogFoldChangeLabel.Text = 'Log(Fold Change)';
+
+            % Create Label_2
+            app.Label_2 = uilabel(app.DataFormatTab);
+            app.Label_2.Position = [38 212 686 33];
+            app.Label_2.Text = 'For KSEA analysis, you should provide the log(fold change) of the phosphosites. It should be tab-delimited:';
+
+            % Create MYOTT397215Label
+            app.MYOTT397215Label = uilabel(app.DataFormatTab);
+            app.MYOTT397215Label.Position = [54 183 128 22];
+            app.MYOTT397215Label.Text = 'MYOT-T397         -2.15';
+
+            % Create HIPK3S3983124Label
+            app.HIPK3S3983124Label = uilabel(app.DataFormatTab);
+            app.HIPK3S3983124Label.Position = [54 162 132 22];
+            app.HIPK3S3983124Label.Text = 'HIPK3-S398         3.124';
+
+            % Show the figure after all components are created
+            app.UIFigure.Visible = 'on';
+        end
+    end
+
+    % App creation and deletion
+    methods (Access = public)
+
+        % Construct app
+        function app = PhosphoEnrichment
+
+            % Create UIFigure and components
+            createComponents(app)
+
+            % Register the app with App Designer
+            registerApp(app, app.UIFigure)
+
+            if nargout == 0
+                clear app
+            end
+        end
+
+        % Code that executes before app deletion
+        function delete(app)
+
+            % Delete UIFigure when app is deleted
+            delete(app.UIFigure)
+        end
+    end
+end
