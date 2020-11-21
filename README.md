@@ -43,13 +43,13 @@ The user can open the applciation by clicking on the PhosphoEnrichment.exe under
 ## 3. Demo and Instruction for use
 
 
-3.1. Pathway Enrichment Analysis: 
+### 3.1. Pathway Enrichment Analysis: 
 
 Input: After openning the application, the user can copy all the sites/proteins identified in the experiment in the population windows, and the target sites/proteins that wants to be do enrichment analysis in the appropriate panel. The user can selected the aproariate type of data and press Enrcihment Analysis. The sites should be deparated by the - from the protein names
 
 Output: The pathways and their p-values will be appear on the buttom of the panel. The pathways, p-values and the proteins/sites involved in the pathways will be printed in the file. 
 
-3.2. Kinase Substrate Enrichment Analysis:
+### 3.2. Kinase Substrate Enrichment Analysis:
 
 Input: The phosphosites and their log(fold change) (space delimited) can be copied to the panel, and also the subset of phosphosites that are target to do KSEA on. 
 
