@@ -26,10 +26,13 @@ in the MathWorks Documentation Center.
 ### 1.2. Files to Deploy and Package
 
 -PhosphoEnrichment.exe
+
 -MCRInstaller.exe 
     Note: if end users are unable to download the MATLAB Runtime using the
     instructions in the previous section, we also include the component in the deployment app
+    
 -PTMsidDB.mat: This file contains the information about the involvement of sites in the pathways (Krug et al, MCP 2019)
+
 -PSP.mat: This file contains the kinase-substrate association in order to do Kinase-Substrate Associations (Hornbeck et al, NAR, 2012)
 
 ### 1.3. The software has been tested on Windows 10, and MATLAB R2020a
